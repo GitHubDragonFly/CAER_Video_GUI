@@ -85,7 +85,6 @@ def play_file_video():
 
     global currentImage
     global close_video_window
-    global take_a_screenshot
     global checkVarLoop
 
     if not video_file is None:
@@ -114,10 +113,6 @@ def play_file_video():
 
                     currentImage = cr1.to_tensor(frame, cspace='bgr')
                     adjust_ghsps()
-
-                    if take_a_screenshot:
-                        cr1.core.cv.imwrite('./Screenshot_' + str(screenshot_count) + '.png', frame)
-                        take_a_screenshot = False
                 else:
                     if checkVarLoop.get() == 1:
                         capture1.release()
@@ -157,7 +152,6 @@ def play_camera_video():
 
     global currentImage
     global close_video_window
-    global take_a_screenshot
 
     if not video_cam is None:
         capture2 = None
@@ -184,10 +178,6 @@ def play_camera_video():
 
                     currentImage = cr2.to_tensor(frame, cspace='bgr')
                     adjust_ghsps()
-
-                    if take_a_screenshot:
-                        cr2.core.cv.imwrite('./Screenshot_' + str(screenshot_count) + '.png', frame)
-                        take_a_screenshot = False
                 else:
                     break
 
@@ -221,6 +211,12 @@ def close_video():
     close_video_window = True
 
 def image_show(frame):
+    global take_a_screenshot
+
+    if take_a_screenshot:
+        caer.core.cv.imwrite('./Screenshot_' + str(screenshot_count) + '.png', frame)
+        take_a_screenshot = False
+
     caer.core.cv.imshow('Video', frame)
 
 def set_edges():
