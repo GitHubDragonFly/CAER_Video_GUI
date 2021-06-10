@@ -23,7 +23,7 @@ The following effects can be applied:
 Tested as working in Windows 10 with python v3.6.8.
 
 # CAER_Multi_Video_GUI
-This particular version only allows playing videos from multiple sources and taking screenshots from either.
+This particular version only allows playing videos from multiple sources and taking screenshots from either (no visual effects).
 
 Requirements: the same as the above CAER_Video_GUI.
 
