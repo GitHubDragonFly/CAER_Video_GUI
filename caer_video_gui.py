@@ -16,7 +16,13 @@
 # Open and play a video file as well as loop it  (use the 'Open File >>' option and either browse locally or enter a URL)
 # Scale the video, the smaller the size the faster the rendering
 # Take a screenshot of the current video frame (saved to app's folder as PNG)
-# Save camera video to a video file - !!! CAUTION !!! THE FILE CAN GET LARGE (saved to app's folder as AVI at 20fps)
+
+# Save camera video to a video file (saved to app's folder as AVI at 20fps) - !!! CAUTION !!! THE FILE COULD POSSIBLY GET LARGE
+#  - This is currently set to use (*'h264') codec so check the following link to get the file for your OS:
+#  - https://github.com/cisco/openh264/releases
+#  - On Windows, it is sufficient to copy this dll file to C:\Windows\System32 folder
+#  - Possibly replace it with (*'XVID') or (*'mp4v') - see code on line 179 or around that number
+#  - Suggestion: leave the extension as '.avi' regardless of the codec
 
 # The following effects can be applied:
 # Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
@@ -172,7 +178,7 @@ def play_camera_video():
             capture2_width = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_WIDTH))
             capture2_height = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_HEIGHT))
 
-            vw_fourcc = cr2.core.cv.VideoWriter_fourcc(*'XVID')
+            vw_fourcc = cr2.core.cv.VideoWriter_fourcc(*'h264') # or try using (*'XVID') or (*'mp4v')
             video_out = cr2.core.cv.VideoWriter('Camera_' + str(video_cam) + '.avi', vw_fourcc, 20.0, (capture2_width, capture2_height))
 
             while True:
@@ -371,7 +377,7 @@ def main():
     # create our main window
     root = Tk()
     root.config(background='black')
-    root.geometry('1070x102')
+    root.geometry('1075x102')
     root.resizable(0,0)
 
     # the following works for a single screen setup
@@ -515,7 +521,7 @@ def main():
 
     # create the image edges low threshold slider control
     low_threshold = IntVar()
-    sliderLowThreshold = Scale(frame2, label='Edges Threshold', variable=low_threshold, troughcolor='blue', from_=100, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderLowThreshold = Scale(frame2, label='Edges Thresh', variable=low_threshold, troughcolor='blue', from_=100, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
     sliderLowThreshold['state'] = 'disabled'
     sliderLowThreshold.pack(side=LEFT, padx=5, pady=2)
     low_threshold.set(50)
@@ -528,7 +534,7 @@ def main():
 
     # create the image emboss slider control
     emboss = IntVar()
-    sliderEmboss = Scale(frame2, label='Emboss Threshold', variable=emboss, troughcolor='blue', from_=128, to=99, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderEmboss = Scale(frame2, label='Emboss Thresh', variable=emboss, troughcolor='blue', from_=128, to=99, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
     sliderEmboss['state'] = 'disabled'
     sliderEmboss.pack(side=LEFT, padx=5, pady=2)
     emboss.set(114)
