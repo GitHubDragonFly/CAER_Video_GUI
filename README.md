@@ -13,8 +13,9 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
 - Video is displayed in external window (the smaller the video size the faster the rendering)
 - Select the camera source to capture the video from (0 is usually default)
 - Open and play a video file as well as loop it (use the 'Open File >>' option and either browse locally or enter a URL)
-- Take a screenshot of the current video frame (files will be saved in the app's folder)
 - Scale the video
+- Take a screenshot of the current video frame (files will be saved in the app's folder)
+- Save camera video to a video file - !!! CAUTION !!! THE FILE CAN GET RATHER LARGE FAIRLY QUICK (saved to app's folder as AVI at 20fps)
 
 The following effects can be applied:
 - Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
