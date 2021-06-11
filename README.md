@@ -22,6 +22,7 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
   - On Windows, it is sufficient to copy this dll file to C:\Windows\System32 folder
   - Possibly replace it with (*'XVID') or (*'mp4v') - see code on line 179 or around that number
   - Suggestion: leave the extension as '.avi' regardless of the choice of codec
+  - Note: frames with Edges are not recorded, for whatever reason is behind that
 
 The following effects can be applied:
 - Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
