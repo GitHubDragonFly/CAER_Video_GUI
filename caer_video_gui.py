@@ -14,8 +14,9 @@
 # Video is displayed in external window
 # Select the camera source to capture the video from (0 is usually default)
 # Open and play a video file as well as loop it  (use the 'Open File >>' option and either browse locally or enter a URL)
-# Take a screenshot of the current video frame
 # Scale the video, the smaller the size the faster the rendering
+# Take a screenshot of the current video frame (saved to app's folder as PNG)
+# Save camera video to a video file - !!! CAUTION !!! THE FILE CAN GET LARGE (saved to app's folder as AVI at 20fps)
 
 # The following effects can be applied:
 # Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
@@ -59,6 +60,7 @@ def select_video_source(*args):
 
                 if video_file != '':
                     lblFileName['text'] = video_file
+                    chbSaveVideo['state'] = 'disabled'
                     start_playing_file_video()
                 else:
                     videoSelection.set('None')
@@ -70,6 +72,7 @@ def select_video_source(*args):
         # [-1:] is functional for 0 to 9 indexes, use [7:] instead to cover any index (provided all names still start with 'Camera_')
         video_cam = int(selectedSource[-1:])
         lblFileName['text'] = selectedSource
+        chbSaveVideo['state'] = 'normal'
         start_playing_camera_video()
 
 def start_playing_file_video():
@@ -152,6 +155,8 @@ def play_camera_video():
 
     global currentImage
     global close_video_window
+    global checkVarSaveVideo
+    global video_out
 
     if not video_cam is None:
         capture2 = None
@@ -164,6 +169,12 @@ def play_camera_video():
         try:
             capture2 = cr2.core.cv.VideoCapture(video_cam)
 
+            capture2_width = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_WIDTH))
+            capture2_height = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_HEIGHT))
+
+            vw_fourcc = cr2.core.cv.VideoWriter_fourcc(*'XVID')
+            video_out = cr2.core.cv.VideoWriter('Camera_' + str(video_cam) + '.avi', vw_fourcc, 20.0, (capture2_width, capture2_height))
+
             while True:
                 isTrue, frame = capture2.read()
 
@@ -175,7 +186,7 @@ def play_camera_video():
                         dimensions = (width, height)
 
                         frame = cr2.core.cv.resize(frame, dimensions, interpolation = caer.core.cv.INTER_AREA)
-
+                    
                     currentImage = cr2.to_tensor(frame, cspace='bgr')
                     adjust_ghsps()
                 else:
@@ -193,6 +204,8 @@ def play_camera_video():
             screenshotBtn['state'] = 'disabled'
             videoSelection.set('None')
             lblFileName['text'] = ''
+            checkVarSaveVideo.set(0)
+            chbSaveVideo['state'] = 'disabled'
             reset_ghsps()
 
         capture2.release()
@@ -214,8 +227,15 @@ def image_show(frame):
     global take_a_screenshot
 
     if take_a_screenshot:
-        caer.core.cv.imwrite('./Screenshot_' + str(screenshot_count) + '.png', frame)
+        if videoSelection.get() == 'Open File >>':
+            caer.core.cv.imwrite('./' + video_file + '_Screenshot_' + str(screenshot_count) + '.png', frame)
+        else:
+            caer.core.cv.imwrite('./' + 'Camera_' + str(video_cam) + '_Screenshot_' + str(screenshot_count) + '.png', frame)
+
         take_a_screenshot = False
+
+    if checkVarSaveVideo.get() == 1:
+        video_out.write(frame)
 
     caer.core.cv.imshow('Video', frame)
 
@@ -342,6 +362,8 @@ def main():
     global screenshotBtn
     global checkVarLoop
     global chbLoop
+    global checkVarSaveVideo
+    global chbSaveVideo
     global close_video_window
     global take_a_screenshot
     global screenshot_count
@@ -422,6 +444,12 @@ def main():
     chbLoop = Checkbutton(frame1, text='Loop ', variable=checkVarLoop, bg='lightgrey', fg='blue', font='Helvetica 8', state='disabled')
     checkVarLoop.set(0)
     chbLoop.pack(side=LEFT, padx=5)
+
+    # add Save Video checkbox
+    checkVarSaveVideo = IntVar()
+    chbSaveVideo = Checkbutton(frame1, text='Save Video ', variable=checkVarSaveVideo, bg='lightgrey', fg='blue', font='Helvetica 8', state='disabled')
+    checkVarSaveVideo.set(0)
+    chbSaveVideo.pack(side=LEFT, padx=5)
 
     # add exit button
     exitBtn = Button(frame1, text='Exit', width=7, fg='red', bg='lightgrey', relief=RAISED, command=root.destroy)
