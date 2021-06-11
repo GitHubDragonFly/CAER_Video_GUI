@@ -15,7 +15,13 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
 - Open and play a video file as well as loop it (use the 'Open File >>' option and either browse locally or enter a URL)
 - Scale the video
 - Take a screenshot of the current video frame (files will be saved in the app's folder)
-- Save camera video to a video file - !!! CAUTION !!! THE FILE CAN GET RATHER LARGE FAIRLY QUICK (saved to app's folder as AVI at 20fps)
+
+- Save camera video to a video file (saved to app's folder as AVI at 20fps) - !!! CAUTION !!! THE FILE COULD POSSIBLY GET LARGE
+  - This is currently set to use (*'h264') codec so check the following link to get the file for your OS:
+  - https://github.com/cisco/openh264/releases
+  - On Windows, it is sufficient to copy this dll file to C:\Windows\System32 folder
+  - Possibly replace it with (*'XVID') or (*'mp4v') - see code on line 179 or around that number
+  - Suggestion: leave the extension as '.avi' regardless of the choice of codec
 
 The following effects can be applied:
 - Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
