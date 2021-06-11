@@ -228,7 +228,7 @@ def image_show(frame):
 
     if take_a_screenshot:
         if videoSelection.get() == 'Open File >>':
-            caer.core.cv.imwrite('./' + video_file + '_Screenshot_' + str(screenshot_count) + '.png', frame)
+            caer.core.cv.imwrite('./Video_File_Screenshot_' + str(screenshot_count) + '.png', frame)
         else:
             caer.core.cv.imwrite('./' + 'Camera_' + str(video_cam) + '_Screenshot_' + str(screenshot_count) + '.png', frame)
 
