@@ -244,9 +244,8 @@ def image_show(frame):
     if checkVarSaveVideo.get() == 1:
         if show_edges.get() == 1:
             frame = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_GRAY2BGR)
-            video_out.write(frame)
-        else:
-            video_out.write(frame)
+
+        video_out.write(frame)
 
     caer.core.cv.imshow('Video', frame)
 
@@ -267,11 +266,11 @@ def set_edges():
 def set_emboss():
     if show_emboss.get() == 1:
         sliderEmboss['state'] = 'normal'
-        show_edges.set(0)
         low_threshold.set(50)
+        show_edges.set(0)
     else:
-        sliderEmboss['state'] = 'disabled'
         emboss.set(114)
+        sliderEmboss['state'] = 'disabled'
 
 def adjust_ghsps(*args):
     global transformedImage
@@ -335,12 +334,12 @@ def reset_ghsps():
     imgGamma.set(1.05)
     hue.set(0.0)
     saturation.set(1.0)
+    sharpen.set(8.9)
     gaussian_blur.set(0)
     posterize.set(6)
     solarize.set(255)
     show_edges.set(0)
     low_threshold.set(50)
-    sharpen.set(8.9)
     show_emboss.set(0)
     emboss.set(114)
     sliderEmboss['state'] = 'disabled'
