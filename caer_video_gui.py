@@ -242,7 +242,11 @@ def image_show(frame):
         take_a_screenshot = False
 
     if checkVarSaveVideo.get() == 1:
-        video_out.write(frame)
+        if show_edges.get() == 1:
+            frame = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_GRAY2BGR)
+            video_out.write(frame)
+        else:
+            video_out.write(frame)
 
     caer.core.cv.imshow('Video', frame)
 
@@ -301,6 +305,7 @@ def adjust_ghsps(*args):
             transformedImage = caer.transforms.solarize(transformedImage, solarize.get())
 
         if show_edges.get() == 1:
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_BGR2GRAY)
             transformedImage = caer.core.cv.Canny(transformedImage, low_threshold.get(), low_threshold.get() * 2)
 
         if show_emboss.get() == 1:
@@ -432,7 +437,7 @@ def main():
     popup_menu_video.pack(side=LEFT, padx=2)
 
     # create a label for the video scaling
-    lblScale = Label(frame1, text='Video Scale', fg='yellow', bg='black', font='Helvetica 9')
+    lblScale = Label(frame1, text='Scale', fg='yellow', bg='black', font='Helvetica 9')
     lblScale.pack(side=LEFT, padx=2)
 
     # create the video scale selection variable and choices
