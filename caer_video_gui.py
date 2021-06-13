@@ -247,8 +247,6 @@ def image_show(frame):
     caer.core.cv.imshow('Video', frame)
 
 def set_edges():
-    global low_threshold
-
     if show_edges.get() == 1:
         sliderLowThreshold['state'] = 'normal'
         emboss.set(114)
@@ -258,8 +256,6 @@ def set_edges():
         sliderLowThreshold['state'] = 'disabled'
 
 def set_emboss():
-    global show_edges
-
     if show_emboss.get() == 1:
         sliderEmboss['state'] = 'normal'
         show_edges.set(0)
