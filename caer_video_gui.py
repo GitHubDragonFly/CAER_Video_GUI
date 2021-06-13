@@ -119,7 +119,7 @@ def play_file_video():
 
                         dimensions = (width, height)
 
-                        frame = cr1.core.cv.resize(frame, dimensions, interpolation = caer.core.cv.INTER_AREA)
+                        frame = cr1.core.cv.resize(frame, dimensions, interpolation = cr1.core.cv.INTER_AREA)
 
                     currentImage = cr1.to_tensor(frame, cspace='bgr')
                     adjust_ghsps()
@@ -192,7 +192,7 @@ def play_camera_video():
 
                         dimensions = (width, height)
 
-                        frame = cr2.core.cv.resize(frame, dimensions, interpolation = caer.core.cv.INTER_AREA)
+                        frame = cr2.core.cv.resize(frame, dimensions, interpolation = cr2.core.cv.INTER_AREA)
                     
                     currentImage = cr2.to_tensor(frame, cspace='bgr')
                     adjust_ghsps()
@@ -300,7 +300,6 @@ def adjust_ghsps(*args):
             transformedImage = caer.core.cv.Canny(transformedImage, low_threshold.get(), low_threshold.get() * 2)
 
         if show_emboss.get() == 1:
-            embossKernel = caer.data.np.array([[0, 1, 0], [0, 0, 0], [0, -1, 0]])
             transformedImage = caer.core.cv.filter2D(transformedImage, -1, embossKernel) + emboss.get()
 
         image_show(transformedImage)
@@ -377,6 +376,7 @@ def main():
     global close_video_window
     global take_a_screenshot
     global screenshot_count
+    global embossKernel
 
     # create our main window
     root = Tk()
@@ -399,6 +399,8 @@ def main():
     take_a_screenshot = False
     screenshot_count = 0
     close_video_window = False
+
+    embossKernel = caer.data.np.array([[0, 1, 0], [0, 0, 0], [0, -1, 0]])
 
     # bind the 'q' keyboard key to quit
     root.bind('q', lambda event:root.destroy())
