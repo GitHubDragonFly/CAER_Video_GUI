@@ -247,12 +247,14 @@ def image_show(frame):
     caer.core.cv.imshow('Video', frame)
 
 def set_edges():
-    global show_emboss
+    global low_threshold
 
     if show_edges.get() == 1:
         sliderLowThreshold['state'] = 'normal'
+        emboss.set(114)
         show_emboss.set(0)
     else:
+        low_threshold.set(50)
         sliderLowThreshold['state'] = 'disabled'
 
 def set_emboss():
@@ -275,7 +277,7 @@ def adjust_ghsps(*args):
         # apply all required transformations to current frame
         
         if hue.get() != 0.0:
-            transformedImage = caer.transforms.adjust_hue(currentImage, hue.get())
+            transformedImage = caer.transforms.adjust_hue(transformedImage, hue.get())
         
         if saturation.get() != 1.0:
             transformedImage = caer.transforms.adjust_saturation(transformedImage, saturation.get())
