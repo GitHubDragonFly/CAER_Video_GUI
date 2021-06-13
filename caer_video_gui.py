@@ -246,6 +246,11 @@ def image_show(frame):
 
     caer.core.cv.imshow('Video', frame)
 
+def set_sharpen_kernel(*args):
+    global sharpenKernel
+
+    sharpenKernel = caer.data.np.array([[-1, -1, -1], [-1, sharpen.get(), -1], [-1, -1, -1]])
+
 def set_edges():
     if show_edges.get() == 1:
         sliderLowThreshold['state'] = 'normal'
@@ -282,7 +287,6 @@ def adjust_ghsps(*args):
             transformedImage = caer.transforms.adjust_gamma(transformedImage, imgGamma.get())
 
         if sharpen.get() != 8.9:
-            sharpenKernel = caer.data.np.array([[-1, -1, -1], [-1, sharpen.get(), -1], [-1, -1, -1]])
             transformedImage = caer.core.cv.filter2D(transformedImage, -1, sharpenKernel)
 
         gb = gaussian_blur.get()
@@ -497,7 +501,7 @@ def main():
 
     # create the image sharpen slider control
     sharpen = DoubleVar()
-    sliderSharpen = Scale(frame2, label='Sharpen', variable=sharpen, troughcolor='blue', from_=7.9, to=9.9, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL)
+    sliderSharpen = Scale(frame2, label='Sharpen', variable=sharpen, troughcolor='blue', from_=7.9, to=9.9, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=set_sharpen_kernel)
     sliderSharpen.pack(side=LEFT, pady=2)
     sharpen.set(8.9)
 
