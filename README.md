@@ -29,6 +29,8 @@ The following effects can be applied:
 - Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
 - Edges and Emboss (which are mutually exclusive - you can only have one applied at the time)
 
+The more effects applied the slower the frame processing.
+
 Tested as working in Windows 10 with python v3.6.8.
 
 # CAER_Multi_Video_GUI
