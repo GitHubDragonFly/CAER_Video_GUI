@@ -27,6 +27,7 @@
 # The following effects can be applied:
 # Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
 # Edges and Emboss (which are mutually exclusive - you can only have one applied at the time)
+# The more effects to be applied, the slower the video rendering will be
 
 # Tested as working in Windows 10 with python v3.6.8
 
@@ -254,32 +255,37 @@ def set_edges():
     else:
         sliderLowThreshold['state'] = 'disabled'
 
-    adjust_ghsps()
-
 def set_emboss():
     global show_edges
 
     if show_emboss.get() == 1:
         sliderEmboss['state'] = 'normal'
         show_edges.set(0)
+        low_threshold.set(50)
     else:
         sliderEmboss['state'] = 'disabled'
-    
-    adjust_ghsps()
+        emboss.set(114)
 
 def adjust_ghsps(*args):
     global transformedImage
 
     if not currentImage is None:
-        # apply all transformations to current frame
+        transformedImage = currentImage
+
+        # apply all required transformations to current frame
         
-        transformedImage = caer.transforms.adjust_hue(currentImage, hue.get())
-        transformedImage = caer.transforms.adjust_saturation(transformedImage, saturation.get())
-        transformedImage = caer.transforms.adjust_gamma(transformedImage, imgGamma.get())
+        if hue.get() != 0.0:
+            transformedImage = caer.transforms.adjust_hue(currentImage, hue.get())
+        
+        if saturation.get() != 1.0:
+            transformedImage = caer.transforms.adjust_saturation(transformedImage, saturation.get())
+        
+        if imgGamma.get() != 1.05:
+            transformedImage = caer.transforms.adjust_gamma(transformedImage, imgGamma.get())
 
         if sharpen.get() != 8.9:
-            kernel = caer.data.np.array([[-1, -1, -1], [-1, sharpen.get(), -1], [-1, -1, -1]])
-            transformedImage = caer.core.cv.filter2D(transformedImage, -1, kernel)
+            sharpenKernel = caer.data.np.array([[-1, -1, -1], [-1, sharpen.get(), -1], [-1, -1, -1]])
+            transformedImage = caer.core.cv.filter2D(transformedImage, -1, sharpenKernel)
 
         gb = gaussian_blur.get()
 
@@ -296,8 +302,8 @@ def adjust_ghsps(*args):
             transformedImage = caer.core.cv.Canny(transformedImage, low_threshold.get(), low_threshold.get() * 2)
 
         if show_emboss.get() == 1:
-            kernel = caer.data.np.array([[0, 1, 0], [0, 0, 0], [0, -1, 0]])
-            transformedImage = caer.core.cv.filter2D(transformedImage, -1, kernel) + emboss.get()
+            embossKernel = caer.data.np.array([[0, 1, 0], [0, 0, 0], [0, -1, 0]])
+            transformedImage = caer.core.cv.filter2D(transformedImage, -1, embossKernel) + emboss.get()
 
         image_show(transformedImage)
 
@@ -473,43 +479,43 @@ def main():
 
     # create the image gamma slider control
     imgGamma = DoubleVar()
-    sliderGamma = Scale(frame2, label='Gamma', variable=imgGamma, troughcolor='blue', from_=0.1, to=2.0, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderGamma = Scale(frame2, label='Gamma', variable=imgGamma, troughcolor='blue', from_=0.1, to=2.0, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderGamma.pack(side=LEFT, padx=5, pady=2)
     imgGamma.set(1.05)
 
     # create the image hue slider control
     hue = DoubleVar()
-    sliderHue = Scale(frame2, label='Hue', variable=hue, troughcolor='blue', from_=-0.5, to=0.5, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderHue = Scale(frame2, label='Hue', variable=hue, troughcolor='blue', from_=-0.5, to=0.5, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderHue.pack(side=LEFT, pady=2)
     hue.set(0.0)
 
     # create the image saturation slider control
     saturation = DoubleVar()
-    sliderSaturation = Scale(frame2, label='Saturation', variable=saturation, troughcolor='blue', from_=0.0, to=2.0, resolution=0.1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderSaturation = Scale(frame2, label='Saturation', variable=saturation, troughcolor='blue', from_=0.0, to=2.0, resolution=0.1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderSaturation.pack(side=LEFT, padx=5, pady=2)
     saturation.set(1.0)
 
     # create the image sharpen slider control
     sharpen = DoubleVar()
-    sliderSharpen = Scale(frame2, label='Sharpen', variable=sharpen, troughcolor='blue', from_=7.9, to=9.9, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderSharpen = Scale(frame2, label='Sharpen', variable=sharpen, troughcolor='blue', from_=7.9, to=9.9, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderSharpen.pack(side=LEFT, pady=2)
     sharpen.set(8.9)
 
     # create the image Gaussian Blur slider control
     gaussian_blur = IntVar()
-    sliderGaussianBlur = Scale(frame2, label='Gaussian Blur', variable=gaussian_blur, troughcolor='blue', from_=0, to=10, resolution=2, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderGaussianBlur = Scale(frame2, label='Gaussian Blur', variable=gaussian_blur, troughcolor='blue', from_=0, to=10, resolution=2, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderGaussianBlur.pack(side=LEFT, padx=5, pady=2)
     gaussian_blur.set(0)
 
     # create the image posterize slider control
     posterize = IntVar()
-    sliderPosterize = Scale(frame2, label='Posterize', variable=posterize, troughcolor='blue', from_=6, to=1, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderPosterize = Scale(frame2, label='Posterize', variable=posterize, troughcolor='blue', from_=6, to=1, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderPosterize.pack(side=LEFT, pady=2)
     posterize.set(6)
 
     # create the image solarize slider control
     solarize = IntVar()
-    sliderSolarize = Scale(frame2, label='Solarize', variable=solarize, troughcolor='blue', from_=255, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderSolarize = Scale(frame2, label='Solarize', variable=solarize, troughcolor='blue', from_=255, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderSolarize.pack(side=LEFT, padx=5, pady=2)
     solarize.set(255)
 
@@ -521,7 +527,7 @@ def main():
 
     # create the image edges low threshold slider control
     low_threshold = IntVar()
-    sliderLowThreshold = Scale(frame2, label='Edges Thresh', variable=low_threshold, troughcolor='blue', from_=100, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderLowThreshold = Scale(frame2, label='Edges Thresh', variable=low_threshold, troughcolor='blue', from_=100, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderLowThreshold['state'] = 'disabled'
     sliderLowThreshold.pack(side=LEFT, padx=5, pady=2)
     low_threshold.set(50)
@@ -534,7 +540,7 @@ def main():
 
     # create the image emboss slider control
     emboss = IntVar()
-    sliderEmboss = Scale(frame2, label='Emboss Thresh', variable=emboss, troughcolor='blue', from_=128, to=99, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderEmboss = Scale(frame2, label='Emboss Thresh', variable=emboss, troughcolor='blue', from_=128, to=99, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderEmboss['state'] = 'disabled'
     sliderEmboss.pack(side=LEFT, padx=5, pady=2)
     emboss.set(114)
