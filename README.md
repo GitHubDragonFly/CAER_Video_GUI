@@ -17,11 +17,10 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
 - Take a screenshot of the current video frame (files will be saved in the app's folder)
 
 - Save camera video to a video file (saved to app's folder as AVI at 20fps) - !!! CAUTION !!! THE FILE COULD POSSIBLY GET LARGE
-  - This is currently set to use (*'h264') codec so check the following link to get the file for your OS:
-  - https://github.com/cisco/openh264/releases
-  - Also make sure to get the correct version since on my computer it was asking for v1.8.0 while currently the latest is v2.1.1
+  - This is currently set to use (*'h264') codec so check this [link](https://github.com/cisco/openh264/releases) to get the file for your OS
+  - Make sure to get the correct version since on my computer it was asking for v1.8.0 while currently the latest is v2.1.1
   - On Windows, it is sufficient to copy this dll file to C:\Windows\System32 folder
-  - Possibly replace it with (*'XVID') or (*'mp4v') - see code on line 179 or around that number
+  - Possibly replace the codec with (*'XVID') or (*'mp4v') - see code on line 179 or around that number
   - Suggestion: leave the extension as '.avi' regardless of the choice of codec
 
 The following effects can be applied:
@@ -52,4 +51,4 @@ Licensed under MIT license.
 Any and all trademarks, either directly or indirectly mentioned, belong to their respective owners.
 
 # Useful Resources
-Check the other GUI examples in the [caer](https://github.com/jasmcaus/caer/tree/master/examples/GUI) repository as well as the [course](https://github.com/jasmcaus/opencv-course) with videos.
+Check the other GUI examples, including image editor, in the [caer](https://github.com/jasmcaus/caer/tree/master/examples/GUI) repository as well as the [course](https://github.com/jasmcaus/opencv-course) with videos.
