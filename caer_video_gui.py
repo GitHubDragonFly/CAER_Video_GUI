@@ -305,8 +305,10 @@ def adjust_ghsps(*args):
 
         if sobel_threshold.get() > 0:
             transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_RGB2GRAY)
-            sobelx = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get(), 0, ksize=sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1)
-            sobely = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, 0, sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get(), ksize=sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1)
+            sobelKernel = sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1 # values 1, 3 and 5
+            dx = dy = sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get()
+            sobelx = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, dx, 0, ksize=sobelKernel)
+            sobely = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, 0, dy, ksize=sobelKernel)
             transformedImage = caer.core.cv.bitwise_or(sobelx, sobely)
             transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2RGB)
 
@@ -398,8 +400,8 @@ def main():
 
     # create our main window
     root = Tk()
-    root.config(background='black')
-    root.geometry('1175x102')
+    root.config(background='#020250')
+    root.geometry('1180x95')
     root.resizable(0,0)
 
     # the following works for a single screen setup
@@ -426,11 +428,11 @@ def main():
     #-----------------------------------------------------------------------
 
     # add a frame to hold video controls
-    frame1 = Frame(root, background='black')
-    frame1.pack(side=TOP, pady=3, fill=X)
+    frame1 = Frame(root, background='#020250')
+    frame1.pack(side=TOP, pady=7, fill=X)
 
     # create a label for the frame
-    lblVideo = Label(frame1, text='Video', fg='yellow', bg='black', width=5, font='Helvetica 9')
+    lblVideo = Label(frame1, text='Video', fg='yellow', bg='#020250', width=5, font='Helvetica 9')
     lblVideo.pack(side=LEFT, padx=5, pady=2)
 
     # create the video selection variable and choices
@@ -446,7 +448,7 @@ def main():
     popup_menu_video.pack(side=LEFT, padx=2)
 
     # create a label for the video scaling
-    lblScale = Label(frame1, text='Scale', fg='yellow', bg='black', font='Helvetica 9')
+    lblScale = Label(frame1, text='Scale', fg='yellow', bg='#020250', font='Helvetica 9')
     lblScale.pack(side=LEFT, padx=2)
 
     # create the video scale selection variable and choices
@@ -486,14 +488,14 @@ def main():
     exitBtn.pack(side=LEFT, padx=5)
 
     # create a label to show the name of the local image file opened by user
-    lblFileName = Label(frame1, text='', fg='yellow', bg='black', font='Helvetica 10')
+    lblFileName = Label(frame1, text='', fg='yellow', bg='#020250', font='Helvetica 10')
     lblFileName.pack(side=RIGHT, padx=10, pady=2)
 
     #-----------------------------------------------------------------------
 
     # add a frame to hold slider controls
-    frame2 = Frame(root, background='black')
-    frame2.pack(side=TOP, pady=5, fill=X)
+    frame2 = Frame(root, background='#020250')
+    frame2.pack(side=TOP, pady=1, fill=X)
 
     # create the image gamma slider control
     imgGamma = DoubleVar()
@@ -539,7 +541,7 @@ def main():
 
     # create the image sobel threshold slider control
     sobel_threshold = IntVar()
-    sliderSobelThreshold = Scale(frame2, label='Sobel Gradient', variable=sobel_threshold, troughcolor='blue', from_=0, to=5, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
+    sliderSobelThreshold = Scale(frame2, label='Sobel Gradient', variable=sobel_threshold, troughcolor='blue', from_=0, to=4, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderSobelThreshold.pack(side=LEFT, pady=2)
     sobel_threshold.set(0)
 
