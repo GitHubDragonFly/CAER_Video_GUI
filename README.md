@@ -45,13 +45,14 @@ Running the app:  the same as the above CAER_Video_GUI, just change 'caer_video_
 - Take a screenshot of the current video frame from any open window (files will be saved in the app's folder)
 
 # CAER_Image_GUI
-This is an expanded version of the app found [here](https://github.com/jasmcaus/caer/blob/master/examples/GUI/caer_gui.py),
-so check it out for features as well as the picture of the app.
+This is an expanded version of the app found [here](https://github.com/jasmcaus/caer/blob/master/examples/GUI/caer_gui.py). See the screenshot in the `screenshots` folder.
 
 It additionally supports SVG and GIF files but does require, in addition to caer and matplotlib, installing the python `pyvips` package with pip as well as `pyvips libraries`, so
 make sure to read the [pyvips](https://libvips.github.io/libvips/install.html) installation instructions.
 
 Also make sure to understand that any foreign SVG files could pose a security risk, so maybe check this [SVG Sanitizer Test](http://svg.enshrined.co.uk/) page for a little bit of additional help.
+
+Read all the comments inside the file itself.
 
 # License
 Licensed under MIT license.
