@@ -4,7 +4,7 @@
 
 # Requirements: python3, caer, matplotlib, pyvips
 
-# SVG Requirements: pyvips libraries, see https://libvips.github.io/libvips/install.html
+# SVG / GIF Requirements: pyvips libraries, see https://libvips.github.io/libvips/install.html
 
 # Run it either via IDLE or from command prompt / terminal with one of these commands:
 # - 'python caer_image_gui.py'
@@ -14,9 +14,10 @@
 
 # Tested as working in Windows 10 with python v3.6.8 and Kubuntu Linux with python v3.6.8
 # You can select one of 14 built-in images to display (startup has "Island" selected as default)
-# You can also browse and select one of your images (use "Open File >>" and either browse locally or enter a URL), either of:
-# PNG / SVG / GIF / JPG / BMP / TIFF file types is available and was tested as working
-# Selecting any of the images, at any point in time, will always start with a fresh original image and reset controls (with the exception of 'Open File >>' which will allow you to select a different image)
+# You can also browse and select one of your images (use the 'Open File >>' option and either browse locally or enter a URL)
+# Either of PNG / SVG / GIF / JPG / BMP / TIFF file types is available and was tested as working
+# Selecting any of the images, at any point in time, will always start with a fresh original image and reset controls
+# The exception to the above is 'Open File >>' which will allow you to select a different image
 # The 'Reload Image' button will reload the original version of currently selected image, including the user opened file
 
 # All function controls are set to manipulate the currently displayed image
@@ -317,6 +318,10 @@ def set_edges():
 
     if show_edges.get() == 1:
         show_emboss.set(0)
+        sliderEmboss['state'] = 'disabled'
+        sliderLowThreshold['state'] = 'normal'
+    else:
+        sliderLowThreshold['state'] = 'disabled'
 
     adjust_ghsps()
 
@@ -325,6 +330,10 @@ def set_emboss():
 
     if show_emboss.get() == 1:
         show_edges.set(0)
+        sliderLowThreshold['state'] = 'disabled'
+        sliderEmboss['state'] = 'normal'
+    else:
+        sliderEmboss['state'] = 'disabled'
     
     adjust_ghsps()
 
@@ -373,6 +382,13 @@ def adjust_ghsps(*args):
         if solarize.get() < 255:
             transformedImage = caer.transforms.solarize(transformedImage, solarize.get())
 
+        if sobel_threshold.get() > 0:
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_RGB2GRAY)
+            sobelx = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get(), 0, ksize=sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1)
+            sobely = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, 0, sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get(), ksize=sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1)
+            transformedImage = caer.core.cv.bitwise_or(sobelx, sobely)
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2RGB)
+
         if show_edges.get() == 1:
             transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_RGB2GRAY)
             transformedImage = caer.core.cv.Canny(transformedImage, low_threshold.get(), low_threshold.get() * 2)
@@ -405,6 +421,7 @@ def reset_ghsps():
     global solarize
     global show_edges
     global low_threshold
+    global sobel_threshold
     global sharpen
     global show_emboss
     global emboss
@@ -435,9 +452,12 @@ def reset_ghsps():
     solarize.set(255)
     show_edges.set(0)
     low_threshold.set(50)
+    sliderLowThreshold['state'] = 'disabled'
+    sobel_threshold.set(0)
     sharpen.set(8.9)
     show_emboss.set(0)
     emboss.set(114)
+    sliderEmboss['state'] = 'disabled'
 
     # close any open histogram window
     plt.close()
@@ -483,7 +503,6 @@ def main():
     global popup_menu_image
     global reload_local_file
     global showAxis
-    global sliderSolarize
     global resizedImgBtn
     global flip_H
     global flip_V
@@ -500,16 +519,19 @@ def main():
     global imgGamma
     global hue
     global saturation
+    global sharpen
     global gaussian_blur
     global posterize
     global solarize
     global show_edges
     global low_threshold
-    global sharpen
+    global sliderLowThreshold
     global show_emboss
     global emboss
+    global sliderEmboss
     global embossKernel
-
+    global sobel_threshold
+ 
     # create our main window
     root = Tk()
     root.config(background='white')
@@ -611,73 +633,79 @@ def main():
     # create the image gamma slider control
     imgGamma = DoubleVar()
     sliderGamma = Scale(frame2, label='Gamma', variable=imgGamma, troughcolor='blue', from_=0.1, to=2.0, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderGamma.pack(side=TOP, anchor=E, padx=2, pady=2)
+    sliderGamma.pack(side=TOP, anchor=E, padx=2)
     imgGamma.set(1.05)
 
     # create the image hue slider control
     hue = DoubleVar()
     sliderHue = Scale(frame2, label='Hue', variable=hue, troughcolor='blue', from_=-0.5, to=0.5, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderHue.pack(side=TOP, anchor=E, padx=2, pady=2)
+    sliderHue.pack(side=TOP, anchor=E, padx=2, pady=3)
     hue.set(0.0)
 
     # create the image saturation slider control
     saturation = DoubleVar()
     sliderSaturation = Scale(frame2, label='Saturation', variable=saturation, troughcolor='blue', from_=0.0, to=2.0, resolution=0.1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderSaturation.pack(side=TOP, anchor=E, padx=2, pady=2)
+    sliderSaturation.pack(side=TOP, anchor=E, padx=2)
     saturation.set(1.0)
 
     # create the image sharpen slider control
     sharpen = DoubleVar()
     sliderSharpen = Scale(frame2, label='Sharpen', variable=sharpen, troughcolor='blue', from_=7.9, to=9.9, resolution=0.05, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=set_sharpen_kernel)
-    sliderSharpen.pack(side=TOP, padx=2, pady=5)
+    sliderSharpen.pack(side=TOP, padx=2, pady=3)
     sharpen.set(8.9)
 
     # create the image Gaussian Blur slider control
     gaussian_blur = IntVar()
     sliderGaussianBlur = Scale(frame2, label='Gaussian Blur', variable=gaussian_blur, troughcolor='blue', from_=0, to=10, resolution=2, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderGaussianBlur.pack(side=TOP, padx=2, pady=5)
+    sliderGaussianBlur.pack(side=TOP, padx=2)
     gaussian_blur.set(0)
 
     # create the image posterize slider control
     posterize = IntVar()
     sliderPosterize = Scale(frame2, label='Posterize', variable=posterize, troughcolor='blue', from_=6, to=1, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderPosterize.pack(side=TOP, padx=2, pady=5)
+    sliderPosterize.pack(side=TOP, padx=2, pady=3)
     posterize.set(6)
 
     # create the image solarize slider control
     solarize = IntVar()
     sliderSolarize = Scale(frame2, label='Solarize', variable=solarize, troughcolor='blue', from_=255, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderSolarize.pack(side=TOP, padx=2, pady=5)
+    sliderSolarize.pack(side=TOP, padx=2)
     solarize.set(255)
+
+    # create the image sobel threshold slider control
+    sobel_threshold = IntVar()
+    sliderSobelThreshold = Scale(frame2, label='Sobel Gradient', variable=sobel_threshold, troughcolor='blue', from_=0, to=5, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
+    sliderSobelThreshold.pack(side=TOP, padx=2, pady=3)
+    sobel_threshold.set(0)
 
     # add 'Edges' checkbox
     show_edges = IntVar()
     chbShowEdges = Checkbutton(frame2, text='Edges', variable=show_edges, width=7, command=set_edges)
-    chbShowEdges.pack(side=TOP, padx=2, pady=5)
+    chbShowEdges.pack(side=TOP, padx=2)
     show_edges.set(0)
 
     # create the image edges low threshold slider control
     low_threshold = IntVar()
-    sliderLowThreshold = Scale(frame2, label='Edges Threshold', variable=low_threshold, troughcolor='blue', from_=100, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderLowThreshold.pack(side=TOP, padx=2, pady=5)
+    sliderLowThreshold = Scale(frame2, label='Edges Threshold', variable=low_threshold, troughcolor='blue', from_=100, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, state='disabled', command=adjust_ghsps)
+    sliderLowThreshold.pack(side=TOP, padx=2, pady=3)
     low_threshold.set(50)
 
     # add 'Emboss' checkbox
     show_emboss = IntVar()
     chbShowEmboss = Checkbutton(frame2, text='Emboss', variable=show_emboss, width=7, command=set_emboss)
-    chbShowEmboss.pack(side=TOP, padx=2, pady=5)
+    chbShowEmboss.pack(side=TOP, padx=2)
     show_emboss.set(0)
 
     # create the image emboss slider control
     emboss = IntVar()
-    sliderEmboss = Scale(frame2, label='Emboss Threshold', variable=emboss, troughcolor='blue', from_=128, to=99, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=adjust_ghsps)
-    sliderEmboss.pack(side=TOP, padx=2, pady=5)
+    sliderEmboss = Scale(frame2, label='Emboss Threshold', variable=emboss, troughcolor='blue', from_=128, to=99, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, state='disabled', command=adjust_ghsps)
+    sliderEmboss.pack(side=TOP, padx=2, pady=3)
     emboss.set(114)
 
     lblScreen = Label(frame2, text='Screen', fg='grey', bg='black', font='Helvetica 9')
-    lblScreen.pack(side=TOP, anchor=CENTER, pady=15)
+    lblScreen.pack(side=TOP, anchor=CENTER, pady=10)
 
-    lblResolution = Label(frame2, text='res: ' + str(screen_width) + 'x' + str(screen_height), fg='grey', bg='black', font='Helvetica 9')
+    lblResolution = Label(frame2, text='res: ' + str(screen_width) + ' x ' + str(screen_height), fg='grey', bg='black', font='Helvetica 9')
     lblResolution.pack(side=TOP, anchor=CENTER)
 
     lblDPI = Label(frame2, text='dpi: ' + str(int(screenDPI)), fg='grey', bg='black', font='Helvetica 9')
