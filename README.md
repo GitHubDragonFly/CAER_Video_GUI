@@ -48,8 +48,8 @@ Running the app:  the same as the above CAER_Video_GUI, just change 'caer_video_
 This is an expanded version of the app found [here](https://github.com/jasmcaus/caer/blob/master/examples/GUI/caer_gui.py),
 so check it out for features as well as the picture of the app.
 
-It additionally supports SVG and GIF files but does require installing the python `pyvips` package with pip as well as `pyvips libraries` (in addition to caer and matplotlib).
-Make sure to read the [pyvips](https://libvips.github.io/libvips/install.html) installation instructions.
+It additionally supports SVG and GIF files but does require, in addition to caer and matplotlib, installing the python `pyvips` package with pip as well as `pyvips libraries`, so
+make sure to read the [pyvips](https://libvips.github.io/libvips/install.html) installation instructions.
 
 Also make sure to understand that any foreign SVG files could pose a security risk, so maybe check this [SVG Sanitizer Test](http://svg.enshrined.co.uk/) page for a little bit of additional help.
 
@@ -60,4 +60,4 @@ Licensed under MIT license.
 Any and all trademarks, either directly or indirectly mentioned, belong to their respective owners.
 
 # Useful Resources
-Check the other GUI examples, including image editor, in the [caer](https://github.com/jasmcaus/caer/tree/master/examples/GUI) repository as well as the [course](https://github.com/jasmcaus/opencv-course) with videos.
+Check the other GUI examples in the [caer](https://github.com/jasmcaus/caer/tree/master/examples/GUI) repository as well as the [course](https://github.com/jasmcaus/opencv-course) with videos.
