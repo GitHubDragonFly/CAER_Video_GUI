@@ -68,6 +68,7 @@ def select_video_source(*args):
                 if video_file != '':
                     lblFileName['text'] = video_file
                     chbSaveVideo['state'] = 'disabled'
+                    chbFaceDetect['state'] = 'disabled'
                     start_playing_file_video()
                 else:
                     videoSelection.set('None')
@@ -80,6 +81,7 @@ def select_video_source(*args):
         video_cam = int(selectedSource[-1:])
         lblFileName['text'] = selectedSource
         chbSaveVideo['state'] = 'normal'
+        chbFaceDetect['state'] = 'normal'
         start_playing_camera_video()
 
 def start_playing_file_video():
@@ -163,6 +165,7 @@ def play_camera_video():
     global currentImage
     global close_video_window
     global checkVarSaveVideo
+    global checkVarFaceDetect
     global video_out
 
     if not video_cam is None:
@@ -176,31 +179,34 @@ def play_camera_video():
         try:
             capture2 = cr2.core.cv.VideoCapture(video_cam)
 
-            capture2_width = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_WIDTH))
-            capture2_height = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_HEIGHT))
+            if not capture2.isOpened():
+                print('Error opening video capture')
+            else:
+                capture2_width = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_WIDTH))
+                capture2_height = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_HEIGHT))
 
-            vw_fourcc = cr2.core.cv.VideoWriter_fourcc(*'h264') # or try using (*'XVID') or (*'mp4v')
-            video_out = cr2.core.cv.VideoWriter('Camera_' + str(video_cam) + '.avi', vw_fourcc, 20.0, (capture2_width, capture2_height))
+                vw_fourcc = cr2.core.cv.VideoWriter_fourcc(*'h264') # or try using (*'XVID') or (*'mp4v')
+                video_out = cr2.core.cv.VideoWriter('Camera_' + str(video_cam) + '.avi', vw_fourcc, 20.0, (capture2_width, capture2_height))
 
-            while True:
-                isTrue, frame = capture2.read()
+                while True:
+                    isTrue, frame = capture2.read()
 
-                if isTrue:
-                    if scaleSelection.get() != '1.00':
-                        width = int(frame.shape[1] * float(scaleSelection.get()))
-                        height = int(frame.shape[0] * float(scaleSelection.get()))
+                    if isTrue:
+                        if scaleSelection.get() != '1.00':
+                            width = int(frame.shape[1] * float(scaleSelection.get()))
+                            height = int(frame.shape[0] * float(scaleSelection.get()))
 
-                        dimensions = (width, height)
+                            dimensions = (width, height)
 
-                        frame = cr2.core.cv.resize(frame, dimensions, interpolation = cr2.core.cv.INTER_AREA)
-                    
-                    currentImage = cr2.to_tensor(frame, cspace='bgr')
-                    adjust_ghsps()
-                else:
-                    break
+                            frame = cr2.core.cv.resize(frame, dimensions, interpolation = cr2.core.cv.INTER_AREA)
 
-                if cr2.core.cv.waitKey(20) & 0xFF == ord('d') or app_closing or close_video_window:
-                    break
+                        currentImage = cr2.to_tensor(frame, cspace='bgr')
+                        adjust_ghsps()
+                    else:
+                        break
+
+                    if cr2.core.cv.waitKey(20) & 0xFF == ord('d') or app_closing or close_video_window:
+                        break
         except Exception as e:
             print(str(e))
 
@@ -213,6 +219,8 @@ def play_camera_video():
             lblFileName['text'] = ''
             checkVarSaveVideo.set(0)
             chbSaveVideo['state'] = 'disabled'
+            checkVarFaceDetect.set(0)
+            chbFaceDetect['state'] = 'disabled'
             reset_ghsps()
 
         capture2.release()
@@ -280,6 +288,23 @@ def adjust_ghsps(*args):
 
         # apply all required transformations to current frame
         
+        if checkVarFaceDetect.get() == 1:
+            gray = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_RGB2GRAY)
+            gray = caer.core.cv.equalizeHist(gray)
+            haar_cascade_face = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_frontalface_default.xml')
+            #haar_cascade_eyes = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_eye_tree_eyeglasses.xml')
+            faces = haar_cascade_face.detectMultiScale(gray)
+
+            for (x,y,w,h) in faces:
+                caer.core.cv.rectangle(transformedImage, (x,y), (x+w,y+h), (0,255,0), thickness=1)
+
+                #faceROI = gray[y:y+h,x:x+w]
+                #eyes = haar_cascade_eyes.detectMultiScale(faceROI)
+                #for (x2,y2,w2,h2) in eyes:
+                    #eye_center = (x + x2 + w2//2, y + y2 + h2//2)
+                    #radius = int(round((w2 + h2)*0.25))
+                    #caer.core.cv.circle(transformedImage, eye_center, radius, (255, 0, 0 ), thickness=1)
+
         if hue.get() != 0.0:
             transformedImage = caer.transforms.adjust_hue(transformedImage, hue.get())
         
@@ -392,6 +417,8 @@ def main():
     global checkVarLoop
     global chbLoop
     global checkVarSaveVideo
+    global checkVarFaceDetect
+    global chbFaceDetect
     global chbSaveVideo
     global close_video_window
     global take_a_screenshot
@@ -483,9 +510,15 @@ def main():
     checkVarSaveVideo.set(0)
     chbSaveVideo.pack(side=LEFT, padx=5)
 
+    # add Face Detect checkbox
+    checkVarFaceDetect = IntVar()
+    chbFaceDetect = Checkbutton(frame1, text='Face Detect ', variable=checkVarFaceDetect, bg='lightgrey', fg='blue', font='Helvetica 8', state='disabled')
+    checkVarFaceDetect.set(0)
+    chbFaceDetect.pack(side=LEFT, padx=5)
+
     # add exit button
-    exitBtn = Button(frame1, text='Exit', width=7, fg='red', bg='lightgrey', relief=RAISED, command=root.destroy)
-    exitBtn.pack(side=LEFT, padx=5)
+    btnExit = Button(frame1, text='Exit', width=7, fg='red', bg='lightgrey', relief=RAISED, command=root.destroy)
+    btnExit.pack(side=LEFT, padx=5)
 
     # create a label to show the name of the local image file opened by user
     lblFileName = Label(frame1, text='', fg='yellow', bg='#020250', font='Helvetica 10')
