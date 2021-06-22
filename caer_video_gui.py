@@ -25,7 +25,7 @@
 #  - Suggestion: leave the extension as '.avi' regardless of the codec
 
 # The following effects can be applied:
-# Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
+# Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize, Solarize and Sobel Gradient
 # Edges and Emboss (which are mutually exclusive - you can only have one applied at the time)
 # The more effects to be applied, the slower the video rendering will be
 
@@ -303,6 +303,13 @@ def adjust_ghsps(*args):
         if solarize.get() < 255:
             transformedImage = caer.transforms.solarize(transformedImage, solarize.get())
 
+        if sobel_threshold.get() > 0:
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_RGB2GRAY)
+            sobelx = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get(), 0, ksize=sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1)
+            sobely = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, 0, sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get(), ksize=sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1)
+            transformedImage = caer.core.cv.bitwise_or(sobelx, sobely)
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2RGB)
+
         if show_edges.get() == 1:
             transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_BGR2GRAY)
             transformedImage = caer.core.cv.Canny(transformedImage, low_threshold.get(), low_threshold.get() * 2)
@@ -326,6 +333,7 @@ def reset_ghsps():
     global sharpen
     global show_emboss
     global emboss
+    global sobel_threshold
 
     currentImage = None
     transformedImage = None
@@ -342,6 +350,7 @@ def reset_ghsps():
     low_threshold.set(50)
     show_emboss.set(0)
     emboss.set(114)
+    sobel_threshold.set(0)
     sliderEmboss['state'] = 'disabled'
     sliderLowThreshold['state'] = 'disabled'
 
@@ -366,6 +375,7 @@ def main():
     global show_emboss
     global sliderEmboss
     global emboss
+    global sobel_threshold
     global toolbar
 
     global popup_menu_image
@@ -389,7 +399,7 @@ def main():
     # create our main window
     root = Tk()
     root.config(background='black')
-    root.geometry('1075x102')
+    root.geometry('1175x102')
     root.resizable(0,0)
 
     # the following works for a single screen setup
@@ -527,30 +537,36 @@ def main():
     sliderSolarize.pack(side=LEFT, padx=5, pady=2)
     solarize.set(255)
 
+    # create the image sobel threshold slider control
+    sobel_threshold = IntVar()
+    sliderSobelThreshold = Scale(frame2, label='Sobel Gradient', variable=sobel_threshold, troughcolor='blue', from_=0, to=5, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
+    sliderSobelThreshold.pack(side=LEFT, pady=2)
+    sobel_threshold.set(0)
+
     # add 'Edges' checkbox
     show_edges = IntVar()
     chbShowEdges = Checkbutton(frame2, variable=show_edges, command=set_edges)
-    chbShowEdges.pack(side=LEFT, anchor=S, pady=2)
+    chbShowEdges.pack(side=LEFT, anchor=S, padx=5, pady=2)
     show_edges.set(0)
 
     # create the image edges low threshold slider control
     low_threshold = IntVar()
     sliderLowThreshold = Scale(frame2, label='Edges Thresh', variable=low_threshold, troughcolor='blue', from_=100, to=0, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderLowThreshold['state'] = 'disabled'
-    sliderLowThreshold.pack(side=LEFT, padx=5, pady=2)
+    sliderLowThreshold.pack(side=LEFT, pady=2)
     low_threshold.set(50)
 
     # add 'Emboss' checkbox
     show_emboss = IntVar()
     chbShowEmboss = Checkbutton(frame2, variable=show_emboss, command=set_emboss)
-    chbShowEmboss.pack(side=LEFT, anchor=S, pady=2)
+    chbShowEmboss.pack(side=LEFT, anchor=S, padx=5, pady=2)
     show_emboss.set(0)
 
     # create the image emboss slider control
     emboss = IntVar()
     sliderEmboss = Scale(frame2, label='Emboss Thresh', variable=emboss, troughcolor='blue', from_=128, to=99, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
     sliderEmboss['state'] = 'disabled'
-    sliderEmboss.pack(side=LEFT, padx=5, pady=2)
+    sliderEmboss.pack(side=LEFT, pady=2)
     emboss.set(114)
 
     #-----------------------------------------------------------------------
