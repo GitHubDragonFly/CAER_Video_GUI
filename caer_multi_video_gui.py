@@ -470,7 +470,7 @@ def main():
     # create our window
     root = Tk()
     root.config(background='navy')
-    root.title('CAER Video GUI - Python v' + pythonVersion)
+    root.title('CAER Multi Video GUI - Python v' + pythonVersion)
     root.geometry('700x205')
     root.resizable(0,0)
 
