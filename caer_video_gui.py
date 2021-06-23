@@ -263,19 +263,14 @@ def image_show(frame):
         video_out.write(frame)
 
     if process_face_detection:
-        overlay_image = caer.core.np.zeros(frame.shape, dtype='uint8')
-        gray = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_RGB2GRAY)
+        gray = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_BGR2GRAY)
         gray = caer.core.cv.equalizeHist(gray)
         haar_cascade_face = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_frontalface_alt.xml')
         faces = haar_cascade_face.detectMultiScale(gray)
 
         if len(faces) > 0:
             for (x,y,w,h) in faces:
-                caer.core.cv.rectangle(overlay_image, (x,y), (x+w,y+h), (0,255,0), thickness=1)
-
-            # broadcast face detection green rectangle pixels to the frame
-            pixels = overlay_image[:, :, 1] > 0
-            frame[pixels] = overlay_image[pixels]
+                caer.core.cv.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), thickness=1)
 
     caer.core.cv.imshow('Video', frame)
 
@@ -351,12 +346,12 @@ def adjust_ghsps(*args):
             sobelx = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, dx, 0, ksize=sobelKernel)
             sobely = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, 0, dy, ksize=sobelKernel)
             transformedImage = caer.core.cv.bitwise_or(sobelx, sobely)
-            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2RGB)
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2BGR)
 
         if show_edges.get() == 1:
             transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_BGR2GRAY)
             transformedImage = caer.core.cv.Canny(transformedImage, low_threshold.get(), low_threshold.get() * 2)
-            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2RGB)
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2BGR)
 
         if show_emboss.get() == 1:
             transformedImage = caer.core.cv.filter2D(transformedImage, -1, embossKernel) + emboss.get()
