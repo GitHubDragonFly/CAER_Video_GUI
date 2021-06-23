@@ -24,10 +24,17 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
   - Suggestion: leave the extension as '.avi' regardless of the choice of codec
 
 The following effects can be applied:
-- Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize and Solarize
+- Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize, Solarize and Sobel Gradient
 - Edges and Emboss (which are mutually exclusive - you can only have one applied at the time)
 
 The more effects applied the slower the frame processing.
+
+Face Detection:
+- Only applicable to camera stream
+- Its functionality might be questionable on modified frames so no transformations will be applied
+- Side effect seems to be dropped frames (at least on my computer):
+  - Displayed video might slow down a bit
+  - Saved video might speed up a bit
 
 Tested as working in Windows 10 with python v3.6.8.
 
