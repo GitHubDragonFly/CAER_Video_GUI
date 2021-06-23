@@ -96,6 +96,7 @@ def play_file_video():
     import caer as cr1
 
     global currentImage
+    global transformedImage
     global close_video_window
     global checkVarLoop
 
@@ -124,6 +125,8 @@ def play_file_video():
                         frame = cr1.core.cv.resize(frame, dimensions, interpolation = cr1.core.cv.INTER_AREA)
 
                     currentImage = cr1.to_tensor(frame, cspace='bgr')
+                    transformedImage = cr1.to_tensor(frame, cspace='bgr')
+
                     adjust_ghsps()
                 else:
                     if checkVarLoop.get() == 1:
@@ -163,6 +166,7 @@ def play_camera_video():
     import caer as cr2
 
     global currentImage
+    global transformedImage
     global close_video_window
     global checkVarSaveVideo
     global checkVarFaceDetect
@@ -185,8 +189,8 @@ def play_camera_video():
                 capture2_width = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_WIDTH))
                 capture2_height = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_HEIGHT))
 
-                vw_fourcc = cr2.core.cv.VideoWriter_fourcc(*'h264') # or try using (*'XVID') or (*'mp4v')
-                video_out = cr2.core.cv.VideoWriter('Camera_' + str(video_cam) + '.avi', vw_fourcc, 20.0, (capture2_width, capture2_height))
+                vw_fourcc = caer.core.cv.VideoWriter_fourcc(*'h264') # or try using (*'XVID') or (*'mp4v')
+                video_out = caer.core.cv.VideoWriter('Camera_' + str(video_cam) + '.avi', vw_fourcc, 20.0, (capture2_width, capture2_height))
 
                 while True:
                     isTrue, frame = capture2.read()
@@ -200,8 +204,14 @@ def play_camera_video():
 
                             frame = cr2.core.cv.resize(frame, dimensions, interpolation = cr2.core.cv.INTER_AREA)
 
-                        currentImage = cr2.to_tensor(frame, cspace='bgr')
-                        adjust_ghsps()
+                        if process_face_detection:
+                            # face detection might be questionable on modified frames so don't apply any transformations
+                            image_show(frame)
+                        else:
+                            currentImage = cr2.to_tensor(frame, cspace='bgr')
+                            transformedImage = cr2.to_tensor(frame, cspace='bgr')
+
+                            adjust_ghsps()
                     else:
                         break
 
@@ -250,10 +260,22 @@ def image_show(frame):
         take_a_screenshot = False
 
     if checkVarSaveVideo.get() == 1:
-        if show_edges.get() == 1:
-            frame = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_GRAY2BGR)
-
         video_out.write(frame)
+
+    if process_face_detection:
+        overlay_image = caer.core.np.zeros(frame.shape, dtype='uint8')
+        gray = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_RGB2GRAY)
+        gray = caer.core.cv.equalizeHist(gray)
+        haar_cascade_face = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_frontalface_alt.xml')
+        faces = haar_cascade_face.detectMultiScale(gray)
+
+        if len(faces) > 0:
+            for (x,y,w,h) in faces:
+                caer.core.cv.rectangle(overlay_image, (x,y), (x+w,y+h), (0,255,0), thickness=1)
+
+            # broadcast face detection green rectangle pixels to the frame
+            pixels = overlay_image[:, :, 1] > 0
+            frame[pixels] = overlay_image[pixels]
 
     caer.core.cv.imshow('Video', frame)
 
@@ -280,37 +302,31 @@ def set_emboss():
         emboss.set(114)
         sliderEmboss['state'] = 'disabled'
 
+def face_detect():
+    global process_face_detection
+
+    if checkVarFaceDetect.get() == 1:
+        process_face_detection = True
+        reset_sliders()
+        for child in frame2.winfo_children():
+            child.configure(state = 'disabled')
+    else:
+        process_face_detection = False
+        for child in frame2.winfo_children():
+            child.configure(state = 'normal')
+
 def adjust_ghsps(*args):
     global transformedImage
 
-    if not currentImage is None:
-        transformedImage = currentImage
-
-        # apply all required transformations to current frame
-        
-        if checkVarFaceDetect.get() == 1:
-            gray = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_RGB2GRAY)
-            gray = caer.core.cv.equalizeHist(gray)
-            haar_cascade_face = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_frontalface_default.xml')
-            #haar_cascade_eyes = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_eye_tree_eyeglasses.xml')
-            faces = haar_cascade_face.detectMultiScale(gray)
-
-            for (x,y,w,h) in faces:
-                caer.core.cv.rectangle(transformedImage, (x,y), (x+w,y+h), (0,255,0), thickness=1)
-
-                #faceROI = gray[y:y+h,x:x+w]
-                #eyes = haar_cascade_eyes.detectMultiScale(faceROI)
-                #for (x2,y2,w2,h2) in eyes:
-                    #eye_center = (x + x2 + w2//2, y + y2 + h2//2)
-                    #radius = int(round((w2 + h2)*0.25))
-                    #caer.core.cv.circle(transformedImage, eye_center, radius, (255, 0, 0 ), thickness=1)
+    if not transformedImage is None:
+        # apply all requested transformations to current frame
 
         if hue.get() != 0.0:
             transformedImage = caer.transforms.adjust_hue(transformedImage, hue.get())
-        
+
         if saturation.get() != 1.0:
             transformedImage = caer.transforms.adjust_saturation(transformedImage, saturation.get())
-        
+
         if imgGamma.get() != 1.05:
             transformedImage = caer.transforms.adjust_gamma(transformedImage, imgGamma.get())
 
@@ -329,7 +345,7 @@ def adjust_ghsps(*args):
             transformedImage = caer.transforms.solarize(transformedImage, solarize.get())
 
         if sobel_threshold.get() > 0:
-            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_RGB2GRAY)
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_BGR2GRAY)
             sobelKernel = sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1 # values 1, 3 and 5
             dx = dy = sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get()
             sobelx = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, dx, 0, ksize=sobelKernel)
@@ -340,6 +356,7 @@ def adjust_ghsps(*args):
         if show_edges.get() == 1:
             transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_BGR2GRAY)
             transformedImage = caer.core.cv.Canny(transformedImage, low_threshold.get(), low_threshold.get() * 2)
+            transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_GRAY2RGB)
 
         if show_emboss.get() == 1:
             transformedImage = caer.core.cv.filter2D(transformedImage, -1, embossKernel) + emboss.get()
@@ -349,6 +366,18 @@ def adjust_ghsps(*args):
 def reset_ghsps():
     global currentImage
     global transformedImage
+    global video_file
+    global video_cam
+
+    currentImage, transformedImage = None, None
+    video_file, video_cam = None, None
+
+    # reset all sliders
+    reset_sliders()
+
+    caer.core.cv.destroyAllWindows()
+
+def reset_sliders():
     global imgGamma
     global hue
     global saturation
@@ -362,10 +391,6 @@ def reset_ghsps():
     global emboss
     global sobel_threshold
 
-    currentImage = None
-    transformedImage = None
-
-    # reset all sliders
     imgGamma.set(1.05)
     hue.set(0.0)
     saturation.set(1.0)
@@ -381,10 +406,9 @@ def reset_ghsps():
     sliderEmboss['state'] = 'disabled'
     sliderLowThreshold['state'] = 'disabled'
 
-    caer.core.cv.destroyAllWindows()
-
 def main():
     global root
+    global frame2
     global lblFileName
     global currentImage
     global transformedImage
@@ -417,9 +441,10 @@ def main():
     global checkVarLoop
     global chbLoop
     global checkVarSaveVideo
+    global chbSaveVideo
     global checkVarFaceDetect
     global chbFaceDetect
-    global chbSaveVideo
+    global process_face_detection
     global close_video_window
     global take_a_screenshot
     global screenshot_count
@@ -446,6 +471,7 @@ def main():
     take_a_screenshot = False
     screenshot_count = 0
     close_video_window = False
+    process_face_detection = False
 
     embossKernel = caer.data.np.array([[0, 1, 0], [0, 0, 0], [0, -1, 0]])
 
@@ -460,7 +486,7 @@ def main():
 
     # create a label for the frame
     lblVideo = Label(frame1, text='Video', fg='yellow', bg='#020250', width=5, font='Helvetica 9')
-    lblVideo.pack(side=LEFT, padx=5, pady=2)
+    lblVideo.pack(side=LEFT, padx=3, pady=2)
 
     # create the video selection variable and choices
     videoSelection = StringVar()
@@ -472,11 +498,11 @@ def main():
     popup_menu_video = OptionMenu(frame1, videoSelection, *videoChoices)
     popup_menu_video['width'] = 10
     popup_menu_video['bg'] = 'lightgreen'
-    popup_menu_video.pack(side=LEFT, padx=2)
+    popup_menu_video.pack(side=LEFT, pady=2)
 
     # create a label for the video scaling
     lblScale = Label(frame1, text='Scale', fg='yellow', bg='#020250', font='Helvetica 9')
-    lblScale.pack(side=LEFT, padx=2)
+    lblScale.pack(side=LEFT, padx=3, pady=2)
 
     # create the video scale selection variable and choices
     scaleSelection = StringVar()
@@ -488,37 +514,37 @@ def main():
     popup_menu_scale['width'] = 3
     popup_menu_scale['font'] = 'Helvetica 10'
     popup_menu_scale['bg'] = 'lightgreen'
-    popup_menu_scale.pack(side=LEFT, padx=2)
+    popup_menu_scale.pack(side=LEFT, pady=2)
 
     # add Close Video button
     closeBtn = Button(frame1, text='Close Video', width=10, fg='blue', bg='lightgrey', state='disabled', relief=RAISED, command=close_video)
-    closeBtn.pack(side=LEFT, padx=5)
+    closeBtn.pack(side=LEFT, padx=5, pady=2)
 
     # add Screenshot button
     screenshotBtn = Button(frame1, text='Screenshot', width=10, fg='blue', bg='lightgrey', state='disabled', relief=RAISED, command=take_screenshot)
-    screenshotBtn.pack(side=LEFT, padx=5)
+    screenshotBtn.pack(side=LEFT, pady=2)
 
     # add Loop checkbox
     checkVarLoop = IntVar()
     chbLoop = Checkbutton(frame1, text='Loop ', variable=checkVarLoop, bg='lightgrey', fg='blue', font='Helvetica 8', state='disabled')
     checkVarLoop.set(0)
-    chbLoop.pack(side=LEFT, padx=5)
+    chbLoop.pack(side=LEFT, padx=5, pady=2)
 
     # add Save Video checkbox
     checkVarSaveVideo = IntVar()
     chbSaveVideo = Checkbutton(frame1, text='Save Video ', variable=checkVarSaveVideo, bg='lightgrey', fg='blue', font='Helvetica 8', state='disabled')
     checkVarSaveVideo.set(0)
-    chbSaveVideo.pack(side=LEFT, padx=5)
+    chbSaveVideo.pack(side=LEFT, pady=2)
 
     # add Face Detect checkbox
     checkVarFaceDetect = IntVar()
-    chbFaceDetect = Checkbutton(frame1, text='Face Detect ', variable=checkVarFaceDetect, bg='lightgrey', fg='blue', font='Helvetica 8', state='disabled')
+    chbFaceDetect = Checkbutton(frame1, text='Face Detect ', variable=checkVarFaceDetect, bg='lightgrey', fg='blue', font='Helvetica 8', state='disabled', command=face_detect)
     checkVarFaceDetect.set(0)
-    chbFaceDetect.pack(side=LEFT, padx=5)
+    chbFaceDetect.pack(side=LEFT, padx=5, pady=2)
 
     # add exit button
     btnExit = Button(frame1, text='Exit', width=7, fg='red', bg='lightgrey', relief=RAISED, command=root.destroy)
-    btnExit.pack(side=LEFT, padx=5)
+    btnExit.pack(side=LEFT, pady=2)
 
     # create a label to show the name of the local image file opened by user
     lblFileName = Label(frame1, text='', fg='yellow', bg='#020250', font='Helvetica 10')
