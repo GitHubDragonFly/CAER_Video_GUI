@@ -27,7 +27,7 @@ The following effects can be applied:
 - Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize, Solarize and Sobel Gradient
 - Edges and Emboss (which are mutually exclusive - you can only have one applied at the time)
 
-The more effects applied the slower the frame processing.
+The more effects applied the slower the frame processing. The highest impact have Hue and Saturation.
 
 Face Detection:
 - Only applicable to camera stream
