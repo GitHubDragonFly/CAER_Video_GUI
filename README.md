@@ -35,6 +35,7 @@ Face Detection:
 - Side effect seems to be dropped frames (at least on my computer):
   - Displayed video might slow down a bit
   - Saved video might speed up a bit
+  - Scale the video down to achieve better frame rate (0.5 seems to work fine)
 
 Tested as working in Windows 10 with python v3.6.8.
 
