@@ -27,15 +27,15 @@ The following effects can be applied:
 - Gamma, Hue, Saturation, Sharpen, Gaussian Blur, Posterize, Solarize and Sobel Gradient
 - Edges and Emboss (which are mutually exclusive - you can only have one applied at the time)
 
-The more effects applied the slower the frame processing. The highest impact have Hue and Saturation.
+The more effects applied the slower the frame processing. The highest impact have the Hue and Saturation effects.
 
 Face Detection:
 - Only applicable to camera stream
-- Its functionality might be questionable on modified frames so no transformations will be applied
+- Its functionality might be questionable on modified frames so no transformations can be applied (sliders will be disabled)
 - Side effect seems to be dropped frames (at least on my computer):
   - Displayed video might slow down a bit
   - Saved video might speed up a bit
-  - Scale the video down to achieve better frame rate (0.5 seems to work fine)
+  - Scale the video down to achieve better frame rate (0.5 scale seems to work fine)
 
 Tested as working in Windows 10 with python v3.6.8.
 
