@@ -22,7 +22,7 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
   - This is currently set to use (*'h264') codec so check this [link](https://github.com/cisco/openh264/releases) to get the file for your OS
   - Make sure to get the correct version since on my computer it was asking for v1.8.0 while currently the latest is v2.1.1
   - On Windows, it is sufficient to copy this dll file to C:\Windows\System32 folder
-  - Possibly replace the codec with (*'XVID') or (*'mp4v') - see code on line 179 or around that number
+  - Possibly replace the codec with (*'XVID') or (*'mp4v') - see code on line 189 or around that number
   - Suggestion: leave the extension as '.avi' regardless of the choice of codec
 
 The following effects can be applied:
