@@ -1,5 +1,7 @@
 # CAER_Video_GUI
-Video GUI python example for [caer](https://github.com/jasmcaus/caer), with rather simple interface which allows applying some visual effects to the video. Caer is a python library used for Computer or Machine Vision, with the power of [OpenCV](https://opencv.org/), so make sure to read everything you can in that repository.
+Video GUI, python example for [caer](https://github.com/jasmcaus/caer), with rather simple interface which allows applying some visual effects to the video, saving the camera stream and face detection.
+
+Caer is a python library used for Computer or Machine Vision, with the power of [OpenCV](https://opencv.org/), so make sure to read everything you can in that repository.
 
 Requirements: python3 with tkinter, caer and somewhat of a fast computer.
 
