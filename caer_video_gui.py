@@ -95,7 +95,6 @@ def start_playing_file_video():
 def play_file_video():
     import caer as cr1
 
-    global currentImage
     global transformedImage
     global close_video_window
     global checkVarLoop
@@ -124,7 +123,6 @@ def play_file_video():
 
                         frame = cr1.core.cv.resize(frame, dimensions, interpolation = cr1.core.cv.INTER_AREA)
 
-                    currentImage = cr1.to_tensor(frame, cspace='bgr')
                     transformedImage = cr1.to_tensor(frame, cspace='bgr')
 
                     adjust_ghsps()
@@ -135,7 +133,7 @@ def play_file_video():
                     else:
                         break
 
-                if cr1.core.cv.waitKey(20) & 0xFF == ord('d') or app_closing or close_video_window:
+                if cr1.core.cv.waitKey(10) & 0xFF == ord('d') or app_closing or close_video_window:
                     break
         except Exception as e:
             print(str(e))
@@ -165,7 +163,6 @@ def start_playing_camera_video():
 def play_camera_video():
     import caer as cr2
 
-    global currentImage
     global transformedImage
     global close_video_window
     global checkVarSaveVideo
@@ -208,14 +205,13 @@ def play_camera_video():
                             # face detection might be questionable on modified frames so don't apply any transformations
                             image_show(frame)
                         else:
-                            currentImage = cr2.to_tensor(frame, cspace='bgr')
                             transformedImage = cr2.to_tensor(frame, cspace='bgr')
 
                             adjust_ghsps()
                     else:
                         break
 
-                    if cr2.core.cv.waitKey(20) & 0xFF == ord('d') or app_closing or close_video_window:
+                    if cr2.core.cv.waitKey(10) & 0xFF == ord('d') or app_closing or close_video_window:
                         break
         except Exception as e:
             print(str(e))
@@ -359,12 +355,11 @@ def adjust_ghsps(*args):
         image_show(transformedImage)
 
 def reset_ghsps():
-    global currentImage
     global transformedImage
     global video_file
     global video_cam
 
-    currentImage, transformedImage = None, None
+    transformedImage = None
     video_file, video_cam = None, None
 
     # reset all sliders
@@ -404,9 +399,8 @@ def reset_sliders():
 def main():
     global root
     global frame2
-    global lblFileName
-    global currentImage
     global transformedImage
+    global lblFileName
     global sliderSolarize
     global imgGamma
     global hue
@@ -460,7 +454,7 @@ def main():
 
     root.title('CAER Video GUI - Python v' + pythonVersion + '  (Screen : ' + str(screen_width) + ' x ' + str(screen_height) + '   ' + str(int(screenDPI)) + 'dpi)')
 
-    currentImage, transformedImage = None, None
+    transformedImage = None
 
     video_file, video_cam = None, None
     take_a_screenshot = False
