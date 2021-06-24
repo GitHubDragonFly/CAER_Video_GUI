@@ -183,8 +183,8 @@ def play_camera_video():
             if not capture2.isOpened():
                 print('Error opening video capture')
             else:
-                capture2_width = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_WIDTH))
-                capture2_height = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_HEIGHT))
+                capture2_width = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_WIDTH) * float(scaleSelection.get()))
+                capture2_height = int(capture2.get(cr2.core.cv.CAP_PROP_FRAME_HEIGHT) * float(scaleSelection.get()))
 
                 vw_fourcc = caer.core.cv.VideoWriter_fourcc(*'h264') # or try using (*'XVID') or (*'mp4v')
                 video_out = caer.core.cv.VideoWriter('Camera_' + str(video_cam) + '.avi', vw_fourcc, 20.0, (capture2_width, capture2_height))
@@ -194,24 +194,18 @@ def play_camera_video():
 
                     if isTrue:
                         if scaleSelection.get() != '1.00':
-                            width = int(frame.shape[1] * float(scaleSelection.get()))
-                            height = int(frame.shape[0] * float(scaleSelection.get()))
-
-                            dimensions = (width, height)
-
-                            frame = cr2.core.cv.resize(frame, dimensions, interpolation = cr2.core.cv.INTER_AREA)
+                            frame = cr2.core.cv.resize(frame, (capture2_width, capture2_height), interpolation = cr2.core.cv.INTER_AREA)
 
                         if process_face_detection:
                             # face detection might be questionable on modified frames so don't apply any transformations
                             image_show(frame)
                         else:
                             transformedImage = cr2.to_tensor(frame, cspace='bgr')
-
                             adjust_ghsps()
                     else:
                         break
 
-                    if cr2.core.cv.waitKey(10) & 0xFF == ord('d') or app_closing or close_video_window:
+                    if cr2.core.cv.waitKey(20) & 0xFF == ord('d') or app_closing or close_video_window:
                         break
         except Exception as e:
             print(str(e))
@@ -261,7 +255,6 @@ def image_show(frame):
     if process_face_detection:
         gray = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_BGR2GRAY)
         gray = caer.core.cv.equalizeHist(gray)
-        haar_cascade_face = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_frontalface_alt.xml')
         faces = haar_cascade_face.detectMultiScale(gray)
 
         if len(faces) > 0:
@@ -274,6 +267,16 @@ def set_sharpen_kernel(*args):
     global sharpenKernel
 
     sharpenKernel = caer.data.np.array([[-1, -1, -1], [-1, sharpen.get(), -1], [-1, -1, -1]])
+
+def set_sobel_kernel(*args):
+    global sobelKernel
+    global dx, dy, st
+    
+    st = sobel_threshold.get()
+
+    if st > 0:
+        sobelKernel = st if st % 2 != 0 else st + 1 # values 1, 3 and 5
+        dx = dy = st - 2 if st > 2 else st
 
 def set_edges():
     if show_edges.get() == 1:
@@ -335,10 +338,8 @@ def adjust_ghsps(*args):
         if solarize.get() < 255:
             transformedImage = caer.transforms.solarize(transformedImage, solarize.get())
 
-        if sobel_threshold.get() > 0:
+        if st > 0:
             transformedImage = caer.core.cv.cvtColor(transformedImage, caer.core.cv.COLOR_BGR2GRAY)
-            sobelKernel = sobel_threshold.get() if sobel_threshold.get() % 2 != 0 else sobel_threshold.get() + 1 # values 1, 3 and 5
-            dx = dy = sobel_threshold.get() - 2 if sobel_threshold.get() > 2 else sobel_threshold.get()
             sobelx = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, dx, 0, ksize=sobelKernel)
             sobely = caer.core.cv.Sobel(transformedImage, caer.core.cv.IMREAD_GRAYSCALE, 0, dy, ksize=sobelKernel)
             transformedImage = caer.core.cv.bitwise_or(sobelx, sobely)
@@ -416,6 +417,7 @@ def main():
     global sliderEmboss
     global emboss
     global sobel_threshold
+    global st
     global toolbar
 
     global popup_menu_image
@@ -438,6 +440,7 @@ def main():
     global take_a_screenshot
     global screenshot_count
     global embossKernel
+    global haar_cascade_face
 
     # create our main window
     root = Tk()
@@ -463,6 +466,8 @@ def main():
     process_face_detection = False
 
     embossKernel = caer.data.np.array([[0, 1, 0], [0, 0, 0], [0, -1, 0]])
+    haar_cascade_face = caer.core.cv.CascadeClassifier(str(caer.core.cv.data.haarcascades) + 'haarcascade_frontalface_alt.xml')
+    st = 0
 
     # bind the 'q' keyboard key to quit
     root.bind('q', lambda event:root.destroy())
@@ -589,7 +594,7 @@ def main():
 
     # create the image sobel threshold slider control
     sobel_threshold = IntVar()
-    sliderSobelThreshold = Scale(frame2, label='Sobel Gradient', variable=sobel_threshold, troughcolor='blue', from_=0, to=4, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL)
+    sliderSobelThreshold = Scale(frame2, label='Sobel Gradient', variable=sobel_threshold, troughcolor='blue', from_=0, to=4, resolution=1, sliderlength=15, showvalue=False, orient=HORIZONTAL, command=set_sobel_kernel)
     sliderSobelThreshold.pack(side=LEFT, pady=2)
     sobel_threshold.set(0)
 
