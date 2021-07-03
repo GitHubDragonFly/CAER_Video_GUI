@@ -253,9 +253,12 @@ def image_show(frame):
         video_out.write(frame)
 
     if process_face_detection:
-        gray = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_BGR2GRAY)
-        gray = caer.core.cv.equalizeHist(gray)
-        faces = haar_cascade_face.detectMultiScale(gray)
+        #gray = caer.core.cv.cvtColor(frame, caer.core.cv.COLOR_BGR2GRAY)
+        #gray = caer.core.cv.equalizeHist(gray)
+        #faces = haar_cascade_face.detectMultiScale(gray)
+
+        # if the detection is poor then uncomment the 3 lines above and comment out the line below
+        faces = haar_cascade_face.detectMultiScale(frame)
 
         if len(faces) > 0:
             for (x,y,w,h) in faces:
