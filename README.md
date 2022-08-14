@@ -11,6 +11,10 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
 - 'python3 caer_video_gui.py'
 - 'python3 -m caer_video_gui'
 
+## Screenshot
+
+![Start Page](screenshots/Caer%20Video%20GUI.png?raw=true)
+
 ## Functionality
 - Video is displayed in external window (the smaller the video size the faster the rendering)
 - Select the camera source to capture the video from (0 is usually default)
@@ -48,6 +52,10 @@ Requirements: the same as the above CAER_Video_GUI.
 
 Running the app:  the same as the above CAER_Video_GUI, just change 'caer_video_gui' to 'caer_multi_video_gui'
 
+## Screenshot
+
+![Start Page](screenshots/Caer%20Multi%20Video%20GUI.png?raw=true)
+
 ## Functionality
 - Up to 4 video windows can be opened (the smaller the video size the faster the rendering)
 - Select either camera 0 or 1 or both to capture the video from (0 is usually default)
@@ -63,6 +71,10 @@ make sure to read the [pyvips](https://libvips.github.io/libvips/install.html) i
 Also make sure to understand that any foreign SVG files could pose a security risk, so maybe check this [SVG Sanitizer Test](http://svg.enshrined.co.uk/) page for a little bit of additional help.
 
 Read all the comments inside the file itself.
+
+## Screenshot
+
+![Start Page](screenshots/Caer%20Image%20GUI.png?raw=true)
 
 # License
 Licensed under MIT license.
