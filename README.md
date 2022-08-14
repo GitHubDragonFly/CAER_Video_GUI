@@ -6,7 +6,10 @@ Caer is a python library used for Computer or Machine Vision, with the power of 
 Requirements: python3 with tkinter, caer and somewhat of a fast computer.
 
 Run it either via IDLE or from command prompt / terminal with one of these commands:
-`python caer_video_gui.py` `python -m caer_video_gui` `python3 caer_video_gui.py` `python3 -m caer_video_gui`
+- `python caer_video_gui.py`
+- `python -m caer_video_gui`
+- `python3 caer_video_gui.py`
+- `python3 -m caer_video_gui`
 
 ## Screenshot
 
