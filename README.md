@@ -15,7 +15,7 @@ Run it either via IDLE or from command prompt / terminal with one of these comma
 ## Functionality
 - Video is displayed in external window (the smaller the video size the faster the rendering)
 - Select the camera source to capture the video from (0 is usually default)
-- Open and play a video file as well as loop it (use the 'Open File >>' option and either browse locally or enter a URL)
+- Open and play a video file as well as loop it (use the `Open File >>` option and either browse locally or enter a URL)
 - Scale the video
 - Take a screenshot of the current video frame (files will be saved in the app's folder)
 
@@ -47,7 +47,7 @@ This particular version only allows playing videos from multiple sources and tak
 
 Requirements: the same as for the above CAER_Video_GUI.
 
-Running the app:  the same as for the above CAER_Video_GUI, just change 'caer_video_gui' to 'caer_multi_video_gui'
+Running the app: the same as for the above CAER_Video_GUI, just change 'caer_video_gui' to 'caer_multi_video_gui'
 
 ## Screenshot
 
